@@ -11,10 +11,10 @@ public abstract class Account {
     private String phone;
     private String email;
     
-    private String acctNumber;
-    private Currency currency; 
+    private final String acctNumber;
+    private final Currency currency;
     
-    private BigDecimal balance;
+    private BigDecimal balance = new BigDecimal(0);
     
     private String pin = "0000";
 
@@ -88,9 +88,5 @@ public abstract class Account {
         }
         return false;
     }
-    
-    
-    
-    
     
 }
