@@ -1,4 +1,3 @@
-
 package cbs;
 
 public enum Currency {

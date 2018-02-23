@@ -2,6 +2,7 @@
 package cbs;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public abstract class Account {
     
@@ -14,9 +15,10 @@ public abstract class Account {
     private final String acctNumber;
     private final Currency currency;
     
-    private BigDecimal balance = new BigDecimal(0);
+    private BigDecimal balance = new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
+    private AcctStatus status = AcctStatus.OPEN;
     
-    private String pin = "0000";
+    private String PIN = "0000";
 
     public Account(String firstName, String lastName, Address address,
             String phone, String email, Currency currency) {
@@ -26,7 +28,7 @@ public abstract class Account {
         this.phone = phone;
         this.email = email;
         this.currency = currency;
-        acctNumber = AcctSequence.getNext();
+        this.acctNumber = AcctSequence.getNext();
     }
 
     public String getAcctNumber() {
@@ -77,16 +79,31 @@ public abstract class Account {
         this.email = email;
     }
 
-    public boolean checkPin(String pin) {
-        return this.pin.equals(pin);
+    public boolean checkPIN(String PIN) {
+        return this.PIN.equals(PIN);
     }
 
-    public boolean setPin(String oldPIN, String newPIN) {
-        if (checkPin(oldPIN)) {
-            this.pin = newPIN;
+    public boolean changePIN(String oldPIN, String newPIN) {
+        if (checkPIN(oldPIN)) {
+            this.PIN = newPIN;
             return true;
+        } else {
+            System.out.println("Incorrect PIN!");
+            return false;
         }
-        return false;
+
+    }
+
+    public void setStatus(AcctStatus status) {
+        this.status = status;
+    }
+
+    public AcctStatus getStatus() {
+        return status;
+    }
+
+    public BigDecimal getBalance() {
+        return balance;
     }
     
 }

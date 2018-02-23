@@ -1,6 +1,4 @@
-
 package cbs;
-
 
 public class PersonalAccount extends Account {
     
