@@ -156,19 +156,14 @@ public abstract class Account implements Serializable {
         return true;
     }
 
-    public boolean deposit(BigDecimal amount, String PIN) {
-        if (!validatePIN(PIN)) {
-            System.err.println("Incorrect PIN!");
-            return false;
-        } else if (status == AcctStatus.NO_CREDIT
+    public boolean deposit(BigDecimal amount) {
+        if (status == AcctStatus.NO_CREDIT
                 || status == AcctStatus.NO_TRANSACTION) {
             System.err.println("Account frozen!");
             return false;
         } else {
             balance = balance.add(amount);
-            System.out.println("Cash deposit successful!\nYour balance is "
-                    + currency + " "
-                    + balance.setScale(2, RoundingMode.HALF_UP).toPlainString());
+            System.out.println("Cash deposit successful!");
         }
         return true;
     }

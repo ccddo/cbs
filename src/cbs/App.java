@@ -233,7 +233,15 @@ public class App implements Finalisable {
             return;
         }
         BigDecimal value = BigDecimal.valueOf(Reader.readDouble("Enter deposit amount"));
-        boolean deposited = acct.deposit(value, Reader.readNumberString("Enter PIN"));
+        boolean deposited = acct.deposit(value);
+        if (deposited
+                && Reader.readBoolean("Would you like to see your closing balance?")) {
+            if (acct.validatePIN(Reader.readNumberString("Enter PIN"))) {
+                acct.printBalance();
+            } else {
+                System.err.println("Incorrect PIN!");
+            }
+        }
         if (deposited) {
             Transaction t = new Transaction(acct.getAcctNumber(), TranType.DEP,
                     "Cash Deposit", value, acct.getBalance());
