@@ -92,7 +92,7 @@ public class App implements Finalisable {
     public static void createBusinessAccount() {
         System.out.println("Please fill out the following details");
         BusinessAccount ba = new BusinessAccount(
-                Reader.readNameString("Business Name"),
+                Reader.readLine("Business Name"),
                 Reader.readNameString("Signatory's First Name"),
                 Reader.readNameString("Signatory's Last Name"),
                 new Address(Reader.readLine("Business Address (Line 1)"),
@@ -172,7 +172,7 @@ public class App implements Finalisable {
         boolean modified = false;
         if (Reader.readBoolean("Do you want to modify the business name?")) {
             ((BusinessAccount) acct)
-                    .setBusinessName(Reader.readNameString("New Business Name"));
+                    .setBusinessName(Reader.readLine("New Business Name"));
             modified = true;
         }
         if (Reader.readBoolean("Do you want to modify the signatory's first name?")) {
