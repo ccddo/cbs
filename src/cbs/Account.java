@@ -124,6 +124,9 @@ public abstract class Account implements Serializable {
             return false;
         } else {
             balance = balance.subtract(amount);
+            System.out.println("Withdrawal successful. Your balance is "
+                    + currency + " "
+                    + balance.setScale(2, RoundingMode.HALF_UP).toPlainString());
         }
         return true;
     }
@@ -138,6 +141,9 @@ public abstract class Account implements Serializable {
             return false;
         } else {
             balance = balance.add(amount);
+            System.out.println("Deposit successful. Your balance is "
+                    + currency + " "
+                    + balance.setScale(2, RoundingMode.HALF_UP).toPlainString());
         }
         return true;
     }
@@ -160,6 +166,9 @@ public abstract class Account implements Serializable {
         } else {
             balance = balance.subtract(amount);
             dest.balance = dest.balance.add(amount);
+            System.out.println("Funds transfer successful. Your balance is "
+                    + currency + " "
+                    + balance.setScale(2, RoundingMode.HALF_UP).toPlainString());
             return true;
         }
     }

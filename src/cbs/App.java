@@ -30,6 +30,7 @@ public class App implements Finalisable {
         }
         MenuItem c = new MenuItem("C", "Create New Account", app, "createNewAccount");
         MenuItem m = new MenuItem("M", "Modify Account Details", app, "modifyAccountDetails");
+        MenuItem p = new MenuItem("P", "Change Account PIN", app, "changeAccountPIN");
         MenuItem d = new MenuItem("D", "Deposit Cash", app, "depositCash");
         MenuItem w = new MenuItem("W", "Withdraw Cash", app, "withdrawCash");
         MenuItem t = new MenuItem("T", "Transfer Funds", app, "transferFunds");
@@ -37,7 +38,7 @@ public class App implements Finalisable {
         MenuItem s = new MenuItem("S", "View Account Statement", app, "viewAccountStatement");
         MenuItem a = new MenuItem("A", "Modify Account Status", app, "modifyAccountStatus");
         MenuItem l = new MenuItem("L", "Liability Report", app, "liabilityReport");
-        MenuBuilder.displayMenu(app, c, m, d, w, t, b, s, a, l);
+        MenuBuilder.displayMenu(app, c, m, p, d, w, t, b, s, a, l);
         app.finalise();
     }
 
@@ -45,6 +46,7 @@ public class App implements Finalisable {
     public void finalise() {
         Storage.save((Serializable) ledger, "ledger", true);
         Storage.save((Serializable) accounts, "accounts", true);
+        Storage.save(AcctSequence.getCurrent(), "currSeq");
     }
 
     public static void createNewAccount() {
@@ -101,6 +103,10 @@ public class App implements Finalisable {
             System.err.println("Not a personal account!");
             return;
         }
+        if (acct.checkPIN(Reader.readNumberString("Enter PIN"))) {
+            System.err.println("Incorrect PIN!");
+            return;
+        }
         boolean modified = false;
         if (Reader.readBoolean("Do you want to modify the first name?")) {
             acct.setFirstName(Reader.readNameString("New First Name"));
@@ -138,6 +144,10 @@ public class App implements Finalisable {
             return;
         } else if (!(acct instanceof BusinessAccount)) {
             System.err.println("Not a business account!");
+            return;
+        }
+        if (acct.checkPIN(Reader.readNumberString("Enter PIN"))) {
+            System.err.println("Incorrect PIN!");
             return;
         }
         boolean modified = false;
@@ -188,7 +198,7 @@ public class App implements Finalisable {
                 }
             }
             if (acct != null) {
-                System.out.println(acct.getAccountName());
+                System.out.println("Account Name: " + acct.getAccountName());
                 found = Reader.readBoolean("Is this the correct account?");
             } else {
                 return null;
@@ -205,7 +215,7 @@ public class App implements Finalisable {
         }
         BigDecimal value = BigDecimal.valueOf(Reader.readDouble("Enter deposit amount"));
         boolean deposited = acct.deposit(value,
-                Reader.readNumberString("Enter 4-digit PIN", 4));
+                Reader.readNumberString("Enter PIN"));
         if (deposited) {
             Transaction t = new Transaction(acct.getAcctNumber(),
                     TranType.DEP, "Cash Deposit", value, acct.getBalance());
@@ -221,16 +231,40 @@ public class App implements Finalisable {
         }
         BigDecimal value = BigDecimal.valueOf(Reader.readDouble("Enter withdrawal amount"));
         boolean withdrawn = acct.withdraw(value,
-                Reader.readNumberString("Enter 4-digit PIN", 4));
+                Reader.readNumberString("Enter PIN"));
         if (withdrawn) {
             Transaction t = new Transaction(acct.getAcctNumber(),
-                    TranType.WDR, "Cash Withdrawal", value, acct.getBalance());
+                    TranType.WDR, "Cash Withdrawal", value.negate(), acct.getBalance());
             ledger.add(t);
         }
     }
 
     public static void transferFunds() {
-
+        System.out.println("===Source account search===");
+        Account src = search();
+        if (src == null) {
+            System.err.println("Account not found!");
+            return;
+        }
+        System.out.println("\n===Destination account search===");
+        Account dest = search();
+        if (dest == null) {
+            System.err.println("Account not found!");
+            return;
+        }
+        BigDecimal value = BigDecimal.valueOf(Reader.readDouble("\nEnter transfer amount"));
+        boolean transferred = src.transfer(value, dest,
+                Reader.readNumberString("Enter PIN"));
+        if (transferred) {
+            Transaction st = new Transaction(src.getAcctNumber(),
+                    TranType.TRF, "Cash Transfer to " + dest.getAccountName(), 
+                    value.negate(), src.getBalance());
+            Transaction dt = new Transaction(dest.getAcctNumber(),
+                    TranType.TRF, "Cash Transfer from " + src.getAccountName(), 
+                    value, dest.getBalance());
+            ledger.add(st);
+            ledger.add(dt);
+        }
     }
 
     public static void balanceInquiry() {
@@ -239,11 +273,39 @@ public class App implements Finalisable {
             System.err.println("Account not found!");
             return;
         }
-        acct.printBalance();
+        if (acct.checkPIN(Reader.readNumberString("Enter PIN"))) {
+            acct.printBalance();
+        } else {
+            System.err.println("Incorrect PIN!");
+        }
+    }
+
+    public static void changeAccountPIN() {
+        Account acct = search();
+        if (acct == null) {
+            System.err.println("Account not found!");
+            return;
+        }
+        boolean changed = acct.changePIN(
+                Reader.readNumberString("Enter current PIN"),
+                Reader.readNumberString("Enter new PIN", 4));
+        if (changed) {
+            System.out.println("PIN change sucessful!");
+        }
     }
 
     public static void viewAccountStatement() {
-
+        Account acct = search();
+        if (acct == null) {
+            System.err.println("Account not found!");
+            return;
+        }
+        Transaction.printHeader();
+        for (Transaction t : ledger) {
+            if (t.getAccountNumber().equals(acct.getAcctNumber())) {
+                System.out.println(t);
+            }
+        }
     }
 
     public static void modifyAccountStatus() {
@@ -252,6 +314,15 @@ public class App implements Finalisable {
 
     public static void liabilityReport() {
 
+    }
+
+    public static String getAccountName(String acctNumber) {
+        for (Account a : accounts) {
+            if (a.getAcctNumber().equals(acctNumber)) {
+                return a.getAccountName();
+            }
+        }
+        return null;
     }
 
 }

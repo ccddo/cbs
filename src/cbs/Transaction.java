@@ -2,6 +2,9 @@ package cbs;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 public class Transaction implements Serializable {
 
@@ -44,6 +47,26 @@ public class Transaction implements Serializable {
 
     public BigDecimal getClosingBalance() {
         return closingBalance;
+    }
+
+    public static void printHeader() {
+        System.out.println("\nDescription/Date\tType\tValue\t\tBalance");
+    }
+
+    @Override
+    public String toString() {
+        return "\n(" + description + ")\n"
+                + getDateTime() + "\t" + transactionType + "\t"
+                + value.setScale(2, RoundingMode.HALF_UP).toPlainString() + "\t\t"
+                + closingBalance.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+
+    private String getDateTime() {
+        LocalDateTime time = LocalDateTime.ofEpochSecond(
+                timestamp / 1000, 0, ZoneOffset.UTC);
+        return String.format("%02d/%02d/%d %02d:%02d:%02d", time.getDayOfMonth(),
+                time.getMonth().getValue(), time.getYear(),
+                time.getHour(), time.getMinute(), time.getSecond());
     }
 
 }

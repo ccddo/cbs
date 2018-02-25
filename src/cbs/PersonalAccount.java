@@ -1,5 +1,7 @@
 package cbs;
 
+import java.math.RoundingMode;
+
 public class PersonalAccount extends Account {
     
     public PersonalAccount(String firstName, String lastName, Address address, 
@@ -9,8 +11,9 @@ public class PersonalAccount extends Account {
 
     @Override
     public void printBalance() {
-        System.out.println("Account Name: " + getFirstName() + " " + getLastName()
-                + "\nBalance: " + getCurrency() + " " + getBalance().toPlainString());
+        System.out.println("\nAccount Name: " + getFirstName() + " " + getLastName()
+                + "\nBalance: " + getCurrency() + " "
+                + getBalance().setScale(2, RoundingMode.HALF_UP).toPlainString());
     }
 
     @Override

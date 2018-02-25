@@ -1,11 +1,22 @@
 package cbs;
 
+import uod.gla.io.Storage;
+
 public class AcctSequence {
     
-    private static int current = 0;
+    private static int current;
+
+    static {
+        Integer currentSeq = Storage.<Integer>retrieve("currSeq");
+        if (currentSeq != null) {
+            current = currentSeq;
+        } else {
+            current = 0;
+        }
+    }
     
-    public static String getCurrent() {
-        return Integer.toString(current);
+    public static int getCurrent() {
+        return current;
     }
     
     public static String getNext() {

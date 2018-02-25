@@ -1,5 +1,7 @@
 package cbs;
 
+import java.math.RoundingMode;
+
 public class BusinessAccount extends Account {
     
     private String businessName;
@@ -20,8 +22,9 @@ public class BusinessAccount extends Account {
 
     @Override
     public void printBalance() {
-        System.out.println(businessName + "\nBalance: "
-                + getCurrency() + " " + getBalance().toPlainString());
+        System.out.println("\nAccount Name: " + businessName
+                + "\nBalance: " + getCurrency() + " "
+                + getBalance().setScale(2, RoundingMode.HALF_UP).toPlainString());
     }
 
     @Override
