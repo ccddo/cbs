@@ -69,7 +69,8 @@ public class App implements Finalisable {
     public static void createNewAccount() {
         MenuItem p = new MenuItem("P", "Personal Account", app, "createPersonalAccount");
         MenuItem b = new MenuItem("B", "Business Account", app, "createBusinessAccount");
-        MenuBuilder.displayMenuOnce("Personal or Business Account?", p, b);
+        MenuBuilder.displayMenuOnce("What type of account do you want to create?\n"
+                + "Personal or Business Account?", p, b);
     }
 
     public static void createPersonalAccount() {
