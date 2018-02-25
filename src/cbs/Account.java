@@ -172,6 +172,9 @@ public abstract class Account implements Serializable {
         if (!validatePIN(PIN)) {
             System.err.println("Incorrect PIN!");
             return false;
+        } else if (currency != dest.currency) {
+            System.err.println("Can't transfer to a different currency!");
+            return false;
         } else if (status == AcctStatus.NO_DEBIT
                 || status == AcctStatus.NO_TRANSACTION) {
             System.err.println("Source account frozen!");
