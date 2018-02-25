@@ -360,7 +360,7 @@ public class App implements Finalisable {
         BigDecimal usds, gbps, eurs;
         usds = gbps = eurs = new BigDecimal(0);
         for (Account a : accounts) {
-            if (null != a.getCurrency()) {
+            if (a.getCurrency() != null) {
                 switch (a.getCurrency()) {
                     case GBP:
                         gbps = gbps.add(a.getBalance());
