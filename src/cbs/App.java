@@ -324,6 +324,10 @@ public class App implements Finalisable {
             System.err.println("Account not found!");
             return;
         }
+        if (!acct.validatePIN(Reader.readNumberString("Enter PIN"))) {
+            System.err.println("Incorrect PIN!");
+            return;
+        }
         Transaction.printHeader();
         for (Transaction t : ledger) {
             if (t.getAccountNumber().equals(acct.getAcctNumber())) {
