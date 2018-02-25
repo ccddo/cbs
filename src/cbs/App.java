@@ -328,13 +328,19 @@ public class App implements Finalisable {
             System.err.println("Incorrect PIN!");
             return;
         }
-        Transaction.printHeader();
+        List<Transaction> tx = new ArrayList<>();
         Transaction t;
         for (int i = ledger.size() - 1; i >= 0; i--) {
             t = ledger.get(i);
             if (t.getAccountNumber().equals(acct.getAcctNumber())) {
-                System.out.println(t);
+                tx.add(t);
             }
+        }
+        if (tx.isEmpty()) {
+            System.out.println("There are no transactions on this account!");
+        } else {
+            Transaction.printHeader();
+            tx.forEach(System.out::println);
         }
     }
 
