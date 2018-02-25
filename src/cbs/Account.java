@@ -1,10 +1,12 @@
 
 package cbs;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 
-public abstract class Account {
+public abstract class Account implements Serializable {
     
     private String firstName;
     private String lastName;
@@ -16,7 +18,7 @@ public abstract class Account {
     private String PIN = "0000";
 
     private final Currency currency;
-    private BigDecimal balance = new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
+    private BigDecimal balance = new BigDecimal(0);
 
     private AcctStatus status = AcctStatus.OPEN;
 
@@ -54,6 +56,8 @@ public abstract class Account {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
+    public abstract String getAccountName();
 
     public Address getAddress() {
         return address;
@@ -105,8 +109,10 @@ public abstract class Account {
         return balance;
     }
 
+    public abstract void printBalance();
+
     public boolean withdraw(BigDecimal amount, String PIN) {
-        if (checkPIN(PIN)) {
+        if (!checkPIN(PIN)) {
             System.err.println("Incorrect PIN!");
             return false;
         } else if (status == AcctStatus.NO_DEBIT
@@ -117,13 +123,13 @@ public abstract class Account {
             System.err.println("Insufficient funds!");
             return false;
         } else {
-            balance = balance.subtract(amount.setScale(2, RoundingMode.HALF_UP));
+            balance = balance.subtract(amount);
         }
         return true;
     }
 
     public boolean deposit(BigDecimal amount, String PIN) {
-        if (checkPIN(PIN)) {
+        if (!checkPIN(PIN)) {
             System.err.println("Incorrect PIN!");
             return false;
         } else if (status == AcctStatus.NO_CREDIT
@@ -131,13 +137,13 @@ public abstract class Account {
             System.err.println("Account frozen!");
             return false;
         } else {
-            balance = balance.add(amount.setScale(2, RoundingMode.HALF_UP));
+            balance = balance.add(amount);
         }
         return true;
     }
 
     public boolean transfer(BigDecimal amount, Account dest, String PIN) {
-        if (checkPIN(PIN)) {
+        if (!checkPIN(PIN)) {
             System.err.println("Incorrect PIN!");
             return false;
         } else if (status == AcctStatus.NO_DEBIT
@@ -152,10 +158,23 @@ public abstract class Account {
             System.err.println("Insufficient funds!");
             return false;
         } else {
-            balance = balance.subtract(amount.setScale(2, RoundingMode.HALF_UP));
-            dest.balance = dest.balance.add(amount.setScale(2, RoundingMode.HALF_UP));
+            balance = balance.subtract(amount);
+            dest.balance = dest.balance.add(amount);
             return true;
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && obj instanceof Account
+                && ((Account) obj).acctNumber.equals(this.acctNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 19 * hash + Objects.hashCode(this.acctNumber);
+        return hash;
     }
     
 }

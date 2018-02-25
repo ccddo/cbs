@@ -4,8 +4,8 @@ public class BusinessAccount extends Account {
     
     private String businessName;
     
-    public BusinessAccount(String firstName, String lastName, Address address, 
-            String phone, String email, String businessName, Currency currency) {
+    public BusinessAccount(String businessName, String firstName, String lastName,
+            Address address, String phone, String email, Currency currency) {
         super(firstName, lastName, address, phone, email, currency);
         this.businessName = businessName;
     }
@@ -17,5 +17,16 @@ public class BusinessAccount extends Account {
     public String getBusinessName() {
         return businessName;
     }
-    
+
+    @Override
+    public void printBalance() {
+        System.out.println(businessName + "\nBalance: "
+                + getCurrency() + " " + getBalance().toPlainString());
+    }
+
+    @Override
+    public String getAccountName() {
+        return businessName;
+    }
+
 }

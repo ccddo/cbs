@@ -1,8 +1,9 @@
 package cbs;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class Transaction {
+public class Transaction implements Serializable {
 
     private final long timestamp;
     private final String accountNumber;
