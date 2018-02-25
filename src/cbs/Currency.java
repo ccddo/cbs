@@ -2,6 +2,8 @@ package cbs;
 
 public enum Currency {
     
-    GBP, EUR, USD
+    GBP, // Great British Pound
+    EUR, // Euro
+    USD, // US Dollar
     
 }

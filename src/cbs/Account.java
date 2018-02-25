@@ -1,4 +1,3 @@
-
 package cbs;
 
 import java.io.Serializable;
@@ -7,21 +6,35 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 public abstract class Account implements Serializable {
-    
+
+    // Field to store the account details
     private String firstName;
     private String lastName;
     private Address address;
     private String phone;
     private String email;
-    
+
+    // Fields for account number and PIN
     private final String acctNumber;
     private String PIN = "0000";
 
+    /*
+     * A note about the design of this class.
+     * A possibly better way to protect this class would be to require
+     *      all methods to check the PIN first. This ensures that
+     *      no action can be done on an account without first
+     *      verifying the PIN. If the PIN is incorrect, an exception
+     *      can be thrown.
+     */
+
+    // Fields for currency information and account balance
     private final Currency currency;
     private BigDecimal balance = new BigDecimal(0);
 
+    // Field for account status i.e. whether it's frozen or not
     private AcctStatus status = AcctStatus.OPEN;
 
+    // Constructor for generic account
     public Account(String firstName, String lastName, Address address,
             String phone, String email, Currency currency) {
         this.firstName = firstName;
@@ -57,6 +70,8 @@ public abstract class Account implements Serializable {
         this.lastName = lastName;
     }
 
+    // Abstract method to retrieve account name.
+    // Implementation depends on the kind of account i.e. the subclass
     public abstract String getAccountName();
 
     public Address getAddress() {
@@ -91,12 +106,16 @@ public abstract class Account implements Serializable {
         return status;
     }
 
-    public boolean checkPIN(String PIN) {
+    // Authenticate the PIN without revealing the stored PIN.
+    // Returns true if the PIN is correct, false otherwise.
+    // In a real scenario, the PIN won't be stored literally as a String.
+    public boolean validatePIN(String PIN) {
         return this.PIN.equals(PIN);
     }
 
+    // Method to change PIN after authenticating with old PIN
     public boolean changePIN(String oldPIN, String newPIN) {
-        if (checkPIN(oldPIN)) {
+        if (validatePIN(oldPIN)) {
             this.PIN = newPIN;
             return true;
         } else {
@@ -109,10 +128,16 @@ public abstract class Account implements Serializable {
         return balance;
     }
 
-    public abstract void printBalance();
+    // This method prints the account balance to screen.
+    // It uses subclass implementation of getAccountName().
+    public void printBalance() {
+        System.out.println("\nAccount Name: " + getAccountName()
+                + "\nBalance: " + currency + " "
+                + balance.setScale(2, RoundingMode.HALF_UP).toPlainString());
+    }
 
     public boolean withdraw(BigDecimal amount, String PIN) {
-        if (!checkPIN(PIN)) {
+        if (!validatePIN(PIN)) {
             System.err.println("Incorrect PIN!");
             return false;
         } else if (status == AcctStatus.NO_DEBIT
@@ -124,7 +149,7 @@ public abstract class Account implements Serializable {
             return false;
         } else {
             balance = balance.subtract(amount);
-            System.out.println("Withdrawal successful. Your balance is "
+            System.out.println("Cash withdrawal successful!\nYour balance is "
                     + currency + " "
                     + balance.setScale(2, RoundingMode.HALF_UP).toPlainString());
         }
@@ -132,7 +157,7 @@ public abstract class Account implements Serializable {
     }
 
     public boolean deposit(BigDecimal amount, String PIN) {
-        if (!checkPIN(PIN)) {
+        if (!validatePIN(PIN)) {
             System.err.println("Incorrect PIN!");
             return false;
         } else if (status == AcctStatus.NO_CREDIT
@@ -141,7 +166,7 @@ public abstract class Account implements Serializable {
             return false;
         } else {
             balance = balance.add(amount);
-            System.out.println("Deposit successful. Your balance is "
+            System.out.println("Cash deposit successful!\nYour balance is "
                     + currency + " "
                     + balance.setScale(2, RoundingMode.HALF_UP).toPlainString());
         }
@@ -149,7 +174,7 @@ public abstract class Account implements Serializable {
     }
 
     public boolean transfer(BigDecimal amount, Account dest, String PIN) {
-        if (!checkPIN(PIN)) {
+        if (!validatePIN(PIN)) {
             System.err.println("Incorrect PIN!");
             return false;
         } else if (status == AcctStatus.NO_DEBIT
@@ -166,20 +191,22 @@ public abstract class Account implements Serializable {
         } else {
             balance = balance.subtract(amount);
             dest.balance = dest.balance.add(amount);
-            System.out.println("Funds transfer successful. Your balance is "
+            System.out.println("Funds transfer successful!\nYour balance is "
                     + currency + " "
                     + balance.setScale(2, RoundingMode.HALF_UP).toPlainString());
             return true;
         }
     }
 
-    @Override
+    @Override // The equality of this class is based on the account number
+    // This is because, by design, two accounts cannot have the same acct number
     public boolean equals(Object obj) {
         return obj != null && obj instanceof Account
                 && ((Account) obj).acctNumber.equals(this.acctNumber);
     }
 
-    @Override
+    @Override // Must be defined if equals is defined
+    // and should use the same fields as is used in the equals method
     public int hashCode() {
         int hash = 3;
         hash = 19 * hash + Objects.hashCode(this.acctNumber);

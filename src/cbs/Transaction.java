@@ -6,8 +6,9 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-public class Transaction implements Serializable {
+public final class Transaction implements Serializable {
 
+    // Fields to store transaction information
     private final long timestamp;
     private final String accountNumber;
     private final TranType transactionType;
@@ -27,6 +28,15 @@ public class Transaction implements Serializable {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    // Returns a string representation of the date and time of transaction
+    private String getDateTime() {
+        LocalDateTime time = LocalDateTime.ofEpochSecond(
+                timestamp / 1000, 0, ZoneOffset.UTC);
+        return String.format("%02d/%02d/%d %02d:%02d:%02d", time.getDayOfMonth(),
+                time.getMonth().getValue(), time.getYear(),
+                time.getHour(), time.getMinute(), time.getSecond());
     }
 
     public String getAccountNumber() {
@@ -49,24 +59,17 @@ public class Transaction implements Serializable {
         return closingBalance;
     }
 
+    // Used to display header information for an account statement
     public static void printHeader() {
         System.out.println("\nDescription/Date\tType\tValue\t\tBalance");
     }
 
-    @Override
+    @Override // String representation of a transaction
     public String toString() {
         return "\n(" + description + ")\n"
                 + getDateTime() + "\t" + transactionType + "\t"
                 + value.setScale(2, RoundingMode.HALF_UP).toPlainString() + "\t\t"
                 + closingBalance.setScale(2, RoundingMode.HALF_UP).toPlainString();
-    }
-
-    private String getDateTime() {
-        LocalDateTime time = LocalDateTime.ofEpochSecond(
-                timestamp / 1000, 0, ZoneOffset.UTC);
-        return String.format("%02d/%02d/%d %02d:%02d:%02d", time.getDayOfMonth(),
-                time.getMonth().getValue(), time.getYear(),
-                time.getHour(), time.getMinute(), time.getSecond());
     }
 
 }

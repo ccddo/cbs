@@ -3,9 +3,13 @@ package cbs;
 import uod.gla.io.Storage;
 
 public class AcctSequence {
-    
+
+    // Static field used to store the last assigned account number
     private static int current;
 
+    // Initialises the last assigned account number with the value
+    // retrieved from the disk (i.e. the last assigned account number
+    // which was saved to the disk).
     static {
         Integer currentSeq = Storage.<Integer>retrieve("currSeq");
         if (currentSeq != null) {
@@ -14,7 +18,7 @@ public class AcctSequence {
             current = 0;
         }
     }
-    
+
     public static int getCurrent() {
         return current;
     }

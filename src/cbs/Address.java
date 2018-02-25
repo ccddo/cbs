@@ -9,9 +9,9 @@ public class Address implements Serializable {
     private String postCode;
 
     public Address(String line1, String line2, String postCode) {
-        this.line1 = line1;
-        this.line2 = line2;
-        this.postCode = postCode;
+        this.line1 = line1; // A good place for the so-called sentence case
+        this.line2 = line2; // A good place for the so-called sentence case
+        this.postCode = postCode.toUpperCase();
     }
 
     public String getLine1() {
@@ -35,7 +35,7 @@ public class Address implements Serializable {
     }
 
     public void setPostCode(String postCode) {
-        this.postCode = postCode;
+        this.postCode = postCode.toUpperCase();
     }
 
 }

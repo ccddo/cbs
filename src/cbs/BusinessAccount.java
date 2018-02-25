@@ -1,9 +1,8 @@
 package cbs;
 
-import java.math.RoundingMode;
-
 public class BusinessAccount extends Account {
     
+    // Field to store the business name
     private String businessName;
     
     public BusinessAccount(String businessName, String firstName, String lastName,
@@ -20,14 +19,7 @@ public class BusinessAccount extends Account {
         return businessName;
     }
 
-    @Override
-    public void printBalance() {
-        System.out.println("\nAccount Name: " + businessName
-                + "\nBalance: " + getCurrency() + " "
-                + getBalance().setScale(2, RoundingMode.HALF_UP).toPlainString());
-    }
-
-    @Override
+    @Override // Implements the abstract method in the superclass
     public String getAccountName() {
         return businessName;
     }

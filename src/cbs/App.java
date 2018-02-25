@@ -2,6 +2,7 @@ package cbs;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import uod.gla.io.Storage;
@@ -12,12 +13,21 @@ import uod.gla.util.Reader;
 
 public class App implements Finalisable {
 
+    // List to store transactions in the ledger
     static List<Transaction> ledger = new ArrayList<>();
+
+    // List to store all account information, including balances
     static List<Account> accounts = new ArrayList<>();
 
+    // Used by MenuItem and MenuBuilder (see the Utility API documentation)
     static App app = new App();
 
     public static void main(String[] args) {
+
+        System.out.println("Welcome to CBS Banking Application");
+
+        // Load the accounts and transaction ledger from disk and
+        // Initialise the lists with these if the load was successfully done.
         ArrayList<Transaction> savedLedger
                 = Storage.<ArrayList<Transaction>>retrieve("ledger", true);
         ArrayList<Account> savedAccounts
@@ -28,6 +38,8 @@ public class App implements Finalisable {
         if (savedAccounts != null) {
             App.accounts = savedAccounts;
         }
+
+        // Create MenuItem objects representing each available menu option
         MenuItem c = new MenuItem("C", "Create New Account", app, "createNewAccount");
         MenuItem m = new MenuItem("M", "Modify Account Details", app, "modifyAccountDetails");
         MenuItem p = new MenuItem("P", "Change Account PIN", app, "changeAccountPIN");
@@ -38,11 +50,16 @@ public class App implements Finalisable {
         MenuItem s = new MenuItem("S", "View Account Statement", app, "viewAccountStatement");
         MenuItem a = new MenuItem("A", "Modify Account Status", app, "modifyAccountStatus");
         MenuItem l = new MenuItem("L", "Liability Report", app, "liabilityReport");
+
+        // Build the user interface and display the menu
         MenuBuilder.displayMenu(app, c, m, p, d, w, t, b, s, a, l);
+
+        // Run the finalise() method when the application is about to shutdown.
         app.finalise();
+        System.out.println("Good bye!");
     }
 
-    @Override
+    @Override // Saves the application data to disk, on shut down
     public void finalise() {
         Storage.save((Serializable) ledger, "ledger", true);
         Storage.save((Serializable) accounts, "accounts", true);
@@ -67,7 +84,7 @@ public class App implements Finalisable {
                 Reader.readEmailString("Email"),
                 Reader.readEnum("Please select a currency", Currency.class));
         accounts.add(pa);
-        System.out.println("\nAccount successfully created!");
+        System.out.println("\nPersonal account successfully created!");
         System.out.println("Your account number is " + pa.getAcctNumber());
     }
 
@@ -84,14 +101,15 @@ public class App implements Finalisable {
                 Reader.readEmailString("Business Email"),
                 Reader.readEnum("Please select a currency", Currency.class));
         accounts.add(ba);
-        System.out.println("\nAccount successfully created!");
+        System.out.println("\nBusiness account successfully created!");
         System.out.println("Your account number is " + ba.getAcctNumber());
     }
 
     public static void modifyAccountDetails() {
         MenuItem p = new MenuItem("P", "Personal Account", app, "modifyPersonalAccount");
         MenuItem b = new MenuItem("B", "Business Account", app, "modifyBusinessAccount");
-        MenuBuilder.displayMenuOnce("Personal or Business Account?", p, b);
+        MenuBuilder.displayMenuOnce("What type of account do you want to modify?\n"
+                + "Personal or Business Account?", p, b);
     }
 
     public static void modifyPersonalAccount() {
@@ -100,10 +118,10 @@ public class App implements Finalisable {
             System.err.println("Account not found!");
             return;
         } else if (!(acct instanceof PersonalAccount)) {
-            System.err.println("Not a personal account!");
+            System.err.println("That's not a personal account!");
             return;
         }
-        if (acct.checkPIN(Reader.readNumberString("Enter PIN"))) {
+        if (!acct.validatePIN(Reader.readNumberString("Enter PIN"))) {
             System.err.println("Incorrect PIN!");
             return;
         }
@@ -143,10 +161,10 @@ public class App implements Finalisable {
             System.err.println("Account not found!");
             return;
         } else if (!(acct instanceof BusinessAccount)) {
-            System.err.println("Not a business account!");
+            System.err.println("That's not a business account!");
             return;
         }
-        if (acct.checkPIN(Reader.readNumberString("Enter PIN"))) {
+        if (!acct.validatePIN(Reader.readNumberString("Enter PIN"))) {
             System.err.println("Incorrect PIN!");
             return;
         }
@@ -183,14 +201,14 @@ public class App implements Finalisable {
         } else {
             System.out.println("No detail was modified!");
         }
-
     }
 
+    // Used to search for an account.
     private static Account search() {
         boolean found = false;
         Account acct = null;
         while (!found) {
-            String acctNumber = Reader.readNumberString("Enter the account number");
+            String acctNumber = Reader.readNumberString("Enter account number");
             for (Account a : accounts) {
                 if (a.getAcctNumber().equals(acctNumber)) {
                     acct = a;
@@ -214,11 +232,10 @@ public class App implements Finalisable {
             return;
         }
         BigDecimal value = BigDecimal.valueOf(Reader.readDouble("Enter deposit amount"));
-        boolean deposited = acct.deposit(value,
-                Reader.readNumberString("Enter PIN"));
+        boolean deposited = acct.deposit(value, Reader.readNumberString("Enter PIN"));
         if (deposited) {
-            Transaction t = new Transaction(acct.getAcctNumber(),
-                    TranType.DEP, "Cash Deposit", value, acct.getBalance());
+            Transaction t = new Transaction(acct.getAcctNumber(), TranType.DEP,
+                    "Cash Deposit", value, acct.getBalance());
             ledger.add(t);
         }
     }
@@ -230,11 +247,10 @@ public class App implements Finalisable {
             return;
         }
         BigDecimal value = BigDecimal.valueOf(Reader.readDouble("Enter withdrawal amount"));
-        boolean withdrawn = acct.withdraw(value,
-                Reader.readNumberString("Enter PIN"));
+        boolean withdrawn = acct.withdraw(value, Reader.readNumberString("Enter PIN"));
         if (withdrawn) {
-            Transaction t = new Transaction(acct.getAcctNumber(),
-                    TranType.WDR, "Cash Withdrawal", value.negate(), acct.getBalance());
+            Transaction t = new Transaction(acct.getAcctNumber(), TranType.WDR,
+                    "Cash Withdrawal", value.negate(), acct.getBalance());
             ledger.add(t);
         }
     }
@@ -253,17 +269,16 @@ public class App implements Finalisable {
             return;
         }
         BigDecimal value = BigDecimal.valueOf(Reader.readDouble("\nEnter transfer amount"));
-        boolean transferred = src.transfer(value, dest,
-                Reader.readNumberString("Enter PIN"));
+        boolean transferred = src.transfer(value, dest, Reader.readNumberString("Enter PIN"));
         if (transferred) {
-            Transaction st = new Transaction(src.getAcctNumber(),
+            Transaction ts = new Transaction(src.getAcctNumber(),
                     TranType.TRF, "Cash Transfer to " + dest.getAccountName(), 
                     value.negate(), src.getBalance());
-            Transaction dt = new Transaction(dest.getAcctNumber(),
+            Transaction td = new Transaction(dest.getAcctNumber(),
                     TranType.TRF, "Cash Transfer from " + src.getAccountName(), 
                     value, dest.getBalance());
-            ledger.add(st);
-            ledger.add(dt);
+            ledger.add(ts);
+            ledger.add(td);
         }
     }
 
@@ -273,7 +288,7 @@ public class App implements Finalisable {
             System.err.println("Account not found!");
             return;
         }
-        if (acct.checkPIN(Reader.readNumberString("Enter PIN"))) {
+        if (acct.validatePIN(Reader.readNumberString("Enter PIN"))) {
             acct.printBalance();
         } else {
             System.err.println("Incorrect PIN!");
@@ -309,20 +324,43 @@ public class App implements Finalisable {
     }
 
     public static void modifyAccountStatus() {
-
+        Account acct = search();
+        if (acct == null) {
+            System.err.println("Account not found!");
+            return;
+        }
+        AcctStatus status = Reader.readEnum("Select an account status", AcctStatus.class);
+        acct.setStatus(status);
+        System.out.println("Account status now set to " + status);
     }
 
     public static void liabilityReport() {
-
-    }
-
-    public static String getAccountName(String acctNumber) {
+        System.out.println("Details of liabilities");
+        BigDecimal usds, gbps, eurs;
+        usds = gbps = eurs = new BigDecimal(0);
         for (Account a : accounts) {
-            if (a.getAcctNumber().equals(acctNumber)) {
-                return a.getAccountName();
+            if (null != a.getCurrency()) {
+                switch (a.getCurrency()) {
+                    case GBP:
+                        gbps = gbps.add(a.getBalance());
+                        break;
+                    case EUR:
+                        eurs = eurs.add(a.getBalance());
+                        break;
+                    case USD:
+                        usds = usds.add(a.getBalance());
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-        return null;
+        System.out.println("GBP "
+                + gbps.setScale(2, RoundingMode.HALF_UP).toPlainString());
+        System.out.println("EUR "
+                + eurs.setScale(2, RoundingMode.HALF_UP).toPlainString());
+        System.out.println("USD "
+                + usds.setScale(2, RoundingMode.HALF_UP).toPlainString());
     }
 
 }
