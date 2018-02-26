@@ -173,7 +173,7 @@ public abstract class Account implements Serializable {
             System.err.println("Incorrect PIN!");
             return false;
         } else if (this.equals(dest)) {
-            System.out.println("Source and destination accounts must be different!");
+            System.err.println("Source and destination accounts must be different!");
             return false;
         } else if (currency != dest.currency) {
             System.err.println("Can't transfer to a different currency!");
