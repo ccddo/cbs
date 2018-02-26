@@ -31,7 +31,7 @@ public abstract class Account implements Serializable {
     private final Currency currency;
     private BigDecimal balance = new BigDecimal(0);
 
-    // Field for account status i.e. whether it's frozen or not
+    // Field for account status i.e. whether it is frozen or not
     private AcctStatus status = AcctStatus.OPEN;
 
     // Constructor for generic account
